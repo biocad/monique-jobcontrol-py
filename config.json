@@ -1,0 +1,15 @@
+{
+  "build":{
+    "deps":[
+      "pyzmq",
+      "monique_worker_py",
+      "monique_jobcontrol_py"
+    ]
+  },
+  "deploy":{
+    "monique":{
+      "queue_host":"localhost",
+      "queue_port":4050
+    }
+  }
+}
