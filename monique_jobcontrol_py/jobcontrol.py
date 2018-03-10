@@ -4,7 +4,7 @@ import threading
 import json
 from monique_jobcontrol_py.config import read_config
 from monique_worker_py.qmessage import qmessage_from_json, create_qmessage
-from monique_worker_py.task import create_task_id
+from monique_worker_py.task import create_task_id, create_task
 
 
 class Jobcontrol:
@@ -47,7 +47,7 @@ def listen_queue(from_queue):
     """Listen queue and print every message from it in 3 lines:
        TAG:  envelops to efficient filter messages (http://zguide.zeromq.org/page:all#Pub-Sub-Message-Envelopes)
        MSG:  full QMessage that comes from queue
-       TASK: parsed Task from QMessage (just to find it simpler)
+       CONTENT: parsed insides from QMessage (just to find it simpler)
     """
     while True:
         [address, in_message] = from_queue.recv_multipart()
@@ -55,7 +55,7 @@ def listen_queue(from_queue):
         task_json = qmessage.cnt.contents.to_json()
         print('<<< TAG: {}\n'
               '    MSG: {}\n'
-              '   TASK: {}'.format(address.decode('utf8'),
+              'CONTENT: {}'.format(address.decode('utf8'),
                                    in_message.decode('utf8'),
                                    task_json.decode('utf8')))
 
@@ -79,7 +79,8 @@ def push_to_queue(to_queue):
                 with open(command[2], 'r') as file:
                     task_text = file.read()
                 task_config = json.loads(task_text)
-                qmessage = create_qmessage(task_id, task_user, task_spec, task_config)
+                task = create_task(task_id, task_user, task_spec, task_config)
+                qmessage = create_qmessage(task)
                 print('>>> {}'.format(qmessage.to_json().decode('utf8')))
                 to_queue.send(qmessage.to_json())
             else:
